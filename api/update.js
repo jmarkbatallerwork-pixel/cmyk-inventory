@@ -47,9 +47,10 @@ export default async function handler(req, res) {
   const userName = state.users?.[pin];
   if (!userName) return res.status(401).json({ error: "Invalid PIN" });
 
-  if (!["C", "M", "Y", "K"].includes(color)) {
-    return res.status(400).json({ error: "Invalid color" });
-  }
+if (!["C","M","Y","K","MB"].includes(color)) {
+  return res.status(400).json({ error: "Invalid color" });
+}
+
   if (!["add", "reduce"].includes(action)) {
     return res.status(400).json({ error: "Invalid action" });
   }
@@ -85,4 +86,5 @@ export default async function handler(req, res) {
 
   res.status(200).json(state);
 }
+
 
