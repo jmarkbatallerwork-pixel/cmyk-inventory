@@ -19,6 +19,7 @@
     --ok: #21c36b;
     --ok2:#13a455;
     --danger: #ff2b2b;
+    --warn: #ffcc00;
   }
 
   *{ box-sizing:border-box; }
@@ -37,7 +38,13 @@
 
   .shell{ max-width: 980px; margin: 0 auto; }
 
-  .brand{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 16px; }
+  .brand{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom: 16px;
+  }
   .brand h1{ margin:0; font-size: 18px; letter-spacing: .5px; font-weight: 750; }
   .brand .sub{ font-size: 12px; color: var(--muted); }
 
@@ -54,13 +61,18 @@
   @media (max-width: 860px){ .grid{ grid-template-columns: 1fr; } }
 
   .titleRow{
-    display:flex; align-items:center; justify-content:space-between;
-    gap:10px; margin-bottom: 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom: 10px;
   }
   .titleRow h2{ margin:0; font-size: 16px; font-weight: 750; letter-spacing: .3px; }
 
   .pill{
-    display:inline-flex; align-items:center; gap:8px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
     padding: 8px 12px;
     border-radius: 999px;
     border: 1px solid var(--border);
@@ -69,6 +81,44 @@
     color: var(--muted);
     white-space:nowrap;
   }
+
+  /* ✅ ONLINE STATUS PILL */
+  .statusPill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    font-size: 12px;
+    color: rgba(255,255,255,0.82);
+    white-space:nowrap;
+  }
+  .statusDot{
+    width:10px;height:10px;border-radius:999px;
+    background: rgba(255,255,255,0.35);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+  .statusOnline .statusDot{
+    background: var(--ok);
+    box-shadow: 0 0 12px rgba(33,195,107,0.9);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .statusOffline .statusDot{
+    background: rgba(255,255,255,0.30);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+  .statusChecking .statusDot{
+    background: var(--warn);
+    box-shadow: 0 0 10px rgba(255,204,0,0.7);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ transform: scale(1); opacity: .9; }
+    50%{ transform: scale(1.15); opacity: 1; }
+  }
+
   .whoDot{
     width:10px;height:10px;border-radius:50%;
     background: rgba(255,255,255,.8);
@@ -94,7 +144,6 @@
   }
 
   .btnRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; align-items:center; }
-
   button{
     border:none;
     border-radius: 12px;
@@ -128,18 +177,9 @@
     color: #07150c !important;
     box-shadow: 0 0 0 4px rgba(33,195,107,.18), 0 10px 30px rgba(33,195,107,.18);
   }
-  .successPulse{
-    animation: pop .28s ease-out, glow 1s ease-in-out infinite alternate;
-  }
-  @keyframes pop{
-    0%{ transform: scale(.98); }
-    60%{ transform: scale(1.02); }
-    100%{ transform: scale(1); }
-  }
-  @keyframes glow{
-    from{ filter: brightness(1); }
-    to{ filter: brightness(1.08); }
-  }
+  .successPulse{ animation: pop .28s ease-out, glow 1s ease-in-out infinite alternate; }
+  @keyframes pop{ 0%{ transform: scale(.98); } 60%{ transform: scale(1.02); } 100%{ transform: scale(1); } }
+  @keyframes glow{ from{ filter: brightness(1); } to{ filter: brightness(1.08); } }
 
   .msg{ margin-top: 10px; font-size: 13px; color: var(--muted); }
   .msg.err{ color: rgba(255,120,120,.95); }
@@ -231,13 +271,13 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ✅ CONFIRMATION MODAL (CENTER) */
+  /* ✅ CONFIRM MODAL (CENTER) */
   .toastOverlay{
     position: fixed;
     inset: 0;
     display: none;
-    align-items: center;     /* CENTER vertically */
-    justify-content: center; /* CENTER horizontally */
+    align-items: center;
+    justify-content: center;
     padding: 18px 14px;
     background: rgba(0,0,0,0.40);
     backdrop-filter: blur(8px);
@@ -254,27 +294,14 @@
     opacity: 0;
     animation: toastIn .18s ease-out forwards;
   }
-  @keyframes toastIn{
-    to{ transform: translateY(0); opacity: 1; }
-  }
-  .toastTop{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:10px;
-  }
-  .toastTitle{
-    font-weight: 900;
-    letter-spacing:.2px;
-    margin:0;
-    font-size: 15px;
-  }
+  @keyframes toastIn{ to{ transform: translateY(0); opacity: 1; } }
+  .toastTitle{ font-weight: 900; letter-spacing:.2px; margin:0; font-size: 15px; }
   .toastText{
     margin: 8px 0 0 0;
     color: rgba(255,255,255,0.75);
     font-size: 13px;
     line-height: 1.45;
-    white-space: pre-wrap; /* allow \n line breaks */
+    white-space: pre-wrap;
   }
   .toastActions{
     display:flex;
@@ -348,7 +375,15 @@
       <div class="cardPad">
         <div class="titleRow">
           <h2>Dashboard</h2>
-          <span class="pill"><span class="whoDot"></span><span id="who">—</span></span>
+
+          <!-- ✅ ONLINE STATUS + USER -->
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+            <span id="netStatus" class="statusPill statusChecking">
+              <span class="statusDot"></span>
+              <span id="netText">Checking...</span>
+            </span>
+            <span class="pill"><span class="whoDot"></span><span id="who">—</span></span>
+          </div>
         </div>
 
         <div class="btnRow">
@@ -440,11 +475,9 @@
   <!-- ✅ CONFIRM MODAL (CENTER) -->
   <div id="toastOverlay" class="toastOverlay" role="dialog" aria-modal="true" aria-label="Confirmation">
     <div class="toast">
-      <div class="toastTop">
-        <div>
-          <div class="toastTitle" id="toastTitle">Confirm</div>
-          <div class="toastText" id="toastText"></div>
-        </div>
+      <div>
+        <div class="toastTitle" id="toastTitle">Confirm</div>
+        <div class="toastText" id="toastText"></div>
       </div>
       <div class="toastActions">
         <button id="toastCancel" class="btnToast btnToastCancel" type="button">Cancel</button>
@@ -460,6 +493,41 @@
   const $ = (id) => document.getElementById(id);
   function show(id, on){ $(id).style.display = on ? "block" : "none"; }
   function setText(id, t){ $(id).textContent = t || ""; }
+
+  // -------- Online status (browser online/offline + server ping) --------
+  async function updateOnlineStatus(){
+    const pill = $("netStatus");
+    const text = $("netText");
+
+    // If browser says offline, show offline immediately
+    if (!navigator.onLine){
+      pill.classList.remove("statusOnline","statusChecking");
+      pill.classList.add("statusOffline");
+      text.textContent = "Offline";
+      return;
+    }
+
+    // Checking
+    pill.classList.remove("statusOnline","statusOffline");
+    pill.classList.add("statusChecking");
+    text.textContent = "Checking...";
+
+    // Ping server (fast)
+    try{
+      const r = await fetch("/api/state", { method:"GET", cache:"no-store" });
+      if(!r.ok) throw new Error("bad");
+      pill.classList.remove("statusOffline","statusChecking");
+      pill.classList.add("statusOnline");
+      text.textContent = "Online";
+    }catch(e){
+      pill.classList.remove("statusOnline","statusChecking");
+      pill.classList.add("statusOffline");
+      text.textContent = "Offline";
+    }
+  }
+
+  window.addEventListener("online", updateOnlineStatus);
+  window.addEventListener("offline", updateOnlineStatus);
 
   // -------- Login button states --------
   function setLoginLoading(on){
@@ -517,7 +585,6 @@
       $("toastCancel").onclick = () => cleanup(false);
       $("toastConfirm").onclick = () => cleanup(true);
 
-      // click outside the modal cancels
       overlay.onclick = (e) => {
         if (e.target === overlay) cleanup(false);
       };
@@ -525,7 +592,7 @@
   }
 
   async function loadState(){
-    const r = await fetch("/api/state");
+    const r = await fetch("/api/state", { cache:"no-store" });
     if(!r.ok) throw new Error("Failed to load state");
     state = await r.json();
 
@@ -615,11 +682,12 @@
       $("who").textContent = name;
 
       setLoginSuccess();
-      setTimeout(() => {
+      setTimeout(async () => {
         show("login", false);
         show("app", true);
         setText("err",""); setText("ok","");
         render();
+        await updateOnlineStatus(); // show Online/Offline after login
       }, 650);
 
     }catch(e){
@@ -640,8 +708,15 @@
 
   $("refreshBtn").onclick = async () => {
     setText("err",""); setText("ok","");
-    try{ await loadState(); render(); setText("ok","Refreshed."); }
-    catch(e){ setText("err", e.message); }
+    try{
+      await loadState();
+      render();
+      setText("ok","Refreshed.");
+      await updateOnlineStatus();
+    }catch(e){
+      setText("err", e.message);
+      await updateOnlineStatus();
+    }
   };
 
   // ✅ Apply requires centered confirmation modal
@@ -661,7 +736,6 @@
       title: "Confirm Update",
       text: `Apply this update?\n\nItem: ${item}\nAction: ${cap(action)}\nAmount: ${amount}`
     });
-
     if (!ok) return;
 
     try{
@@ -680,8 +754,10 @@
       $("amount").value = "";
       render();
       setText("ok","Saved.");
+      await updateOnlineStatus();
     }catch(e){
       setText("err", e.message);
+      await updateOnlineStatus();
     }
   };
 
