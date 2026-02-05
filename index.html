@@ -231,25 +231,25 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ✅ CONFIRMATION TOAST */
+  /* ✅ CONFIRMATION MODAL (CENTER) */
   .toastOverlay{
     position: fixed;
     inset: 0;
     display: none;
-    align-items: flex-end;
-    justify-content: center;
+    align-items: center;     /* CENTER vertically */
+    justify-content: center; /* CENTER horizontally */
     padding: 18px 14px;
-    background: rgba(0,0,0,0.30);
-    backdrop-filter: blur(6px);
+    background: rgba(0,0,0,0.40);
+    backdrop-filter: blur(8px);
     z-index: 9999;
   }
   .toast{
     width: min(560px, 96vw);
-    border-radius: 16px;
+    border-radius: 18px;
     border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(10, 14, 30, 0.86);
-    box-shadow: 0 18px 70px rgba(0,0,0,.45);
-    padding: 14px;
+    background: rgba(10, 14, 30, 0.92);
+    box-shadow: 0 20px 80px rgba(0,0,0,.55);
+    padding: 16px;
     transform: translateY(10px);
     opacity: 0;
     animation: toastIn .18s ease-out forwards;
@@ -267,18 +267,19 @@
     font-weight: 900;
     letter-spacing:.2px;
     margin:0;
-    font-size: 14px;
+    font-size: 15px;
   }
   .toastText{
-    margin: 6px 0 0 0;
-    color: rgba(255,255,255,0.72);
+    margin: 8px 0 0 0;
+    color: rgba(255,255,255,0.75);
     font-size: 13px;
-    line-height: 1.35;
+    line-height: 1.45;
+    white-space: pre-wrap; /* allow \n line breaks */
   }
   .toastActions{
     display:flex;
     gap:10px;
-    margin-top: 12px;
+    margin-top: 14px;
     flex-wrap:wrap;
     justify-content:flex-end;
   }
@@ -436,7 +437,7 @@
 
   </div>
 
-  <!-- ✅ CONFIRM TOAST OVERLAY -->
+  <!-- ✅ CONFIRM MODAL (CENTER) -->
   <div id="toastOverlay" class="toastOverlay" role="dialog" aria-modal="true" aria-label="Confirmation">
     <div class="toast">
       <div class="toastTop">
@@ -490,7 +491,7 @@
     btn.style.opacity = "1";
   }
 
-  // -------- Confirmation toast (promise) --------
+  // -------- Confirmation modal (center) --------
   function confirmToast({ title="Confirm", text="Are you sure?" } = {}){
     return new Promise((resolve) => {
       const overlay = $("toastOverlay");
@@ -516,7 +517,7 @@
       $("toastCancel").onclick = () => cleanup(false);
       $("toastConfirm").onclick = () => cleanup(true);
 
-      // click outside the toast cancels
+      // click outside the modal cancels
       overlay.onclick = (e) => {
         if (e.target === overlay) cleanup(false);
       };
@@ -528,7 +529,6 @@
     if(!r.ok) throw new Error("Failed to load state");
     state = await r.json();
 
-    // Ensure MB exists even if old data doesn't have it yet
     state.stock = state.stock || {};
     if(typeof state.stock.MB !== "number") state.stock.MB = 0;
   }
@@ -614,10 +614,7 @@
 
       $("who").textContent = name;
 
-      // show success on the button first
       setLoginSuccess();
-
-      // short delay so user sees "Login Success" animation
       setTimeout(() => {
         show("login", false);
         show("app", true);
@@ -628,9 +625,7 @@
     }catch(e){
       setText("loginErr", e.message);
     }finally{
-      // if login failed, restore button state
-      const hasError = !!$("loginErr").textContent;
-      if (hasError) resetLoginButton();
+      if ($("loginErr").textContent) resetLoginButton();
     }
   };
 
@@ -649,11 +644,11 @@
     catch(e){ setText("err", e.message); }
   };
 
-  // ✅ Apply requires confirmation toast
+  // ✅ Apply requires centered confirmation modal
   $("applyBtn").onclick = async () => {
     setText("err",""); setText("ok","");
 
-    const color = $("color").value; // includes MB
+    const color = $("color").value;
     const action = $("action").value;
     const amount = Number(($("amount").value || "").trim());
 
