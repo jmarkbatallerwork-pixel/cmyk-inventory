@@ -13,10 +13,12 @@
     --border: rgba(255,255,255,0.12);
     --text: rgba(255,255,255,0.92);
     --muted: rgba(255,255,255,0.65);
-    --danger: #ff4d4d;
-    --ok: #21c36b;
     --shadow: 0 18px 60px rgba(0,0,0,.35);
     --radius: 16px;
+
+    --ok: #21c36b;
+    --ok2:#13a455;
+    --danger: #ff2b2b;
   }
 
   *{ box-sizing:border-box; }
@@ -35,23 +37,9 @@
 
   .shell{ max-width: 980px; margin: 0 auto; }
 
-  .brand{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom: 16px;
-  }
-  .brand h1{
-    margin:0;
-    font-size: 18px;
-    letter-spacing: .5px;
-    font-weight: 750;
-  }
-  .brand .sub{
-    font-size: 12px;
-    color: var(--muted);
-  }
+  .brand{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 16px; }
+  .brand h1{ margin:0; font-size: 18px; letter-spacing: .5px; font-weight: 750; }
+  .brand .sub{ font-size: 12px; color: var(--muted); }
 
   .card{
     background: linear-gradient(180deg, var(--card), var(--card2));
@@ -60,36 +48,19 @@
     box-shadow: var(--shadow);
     overflow:hidden;
   }
-
   .cardPad{ padding: 18px; }
 
-  .grid{
-    display:grid;
-    grid-template-columns: 1.2fr .8fr;
-    gap: 14px;
-  }
-  @media (max-width: 860px){
-    .grid{ grid-template-columns: 1fr; }
-  }
+  .grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap: 14px; }
+  @media (max-width: 860px){ .grid{ grid-template-columns: 1fr; } }
 
   .titleRow{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    margin-bottom: 10px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; margin-bottom: 10px;
   }
-  .titleRow h2{
-    margin:0;
-    font-size: 16px;
-    font-weight: 750;
-    letter-spacing: .3px;
-  }
+  .titleRow h2{ margin:0; font-size: 16px; font-weight: 750; letter-spacing: .3px; }
 
   .pill{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
+    display:inline-flex; align-items:center; gap:8px;
     padding: 8px 12px;
     border-radius: 999px;
     border: 1px solid var(--border);
@@ -104,12 +75,7 @@
     box-shadow: 0 0 18px rgba(255,255,255,.35);
   }
 
-  label{
-    display:block;
-    font-size: 12px;
-    color: var(--muted);
-    margin: 0 0 6px 2px;
-  }
+  label{ display:block; font-size: 12px; color: var(--muted); margin: 0 0 6px 2px; }
 
   input, select{
     width:100%;
@@ -127,21 +93,16 @@
     box-shadow: 0 0 0 4px rgba(123,97,255,.16);
   }
 
-  .btnRow{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top: 10px;
-    align-items:center;
-  }
+  .btnRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; align-items:center; }
+
   button{
     border:none;
     border-radius: 12px;
     padding: 12px 14px;
     cursor:pointer;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing:.2px;
-    transition: transform .06s ease, filter .12s ease, opacity .12s ease;
+    transition: transform .06s ease, filter .12s ease, opacity .12s ease, background .15s ease;
   }
   button:active{ transform: translateY(1px); }
 
@@ -159,17 +120,28 @@
     border: 1px solid var(--border);
     color: var(--text);
   }
-  .btnSmall{
-    padding: 10px 12px;
-    font-size: 12px;
-    border-radius: 12px;
+  .btnSmall{ padding: 10px 12px; font-size: 12px; border-radius: 12px; }
+
+  /* ✅ LOGIN SUCCESS BUTTON */
+  .btnSuccess{
+    background: linear-gradient(135deg, rgba(33,195,107,.95), rgba(19,164,85,.85)) !important;
+    color: #07150c !important;
+    box-shadow: 0 0 0 4px rgba(33,195,107,.18), 0 10px 30px rgba(33,195,107,.18);
+  }
+  .successPulse{
+    animation: pop .28s ease-out, glow 1s ease-in-out infinite alternate;
+  }
+  @keyframes pop{
+    0%{ transform: scale(.98); }
+    60%{ transform: scale(1.02); }
+    100%{ transform: scale(1); }
+  }
+  @keyframes glow{
+    from{ filter: brightness(1); }
+    to{ filter: brightness(1.08); }
   }
 
-  .msg{
-    margin-top: 10px;
-    font-size: 13px;
-    color: var(--muted);
-  }
+  .msg{ margin-top: 10px; font-size: 13px; color: var(--muted); }
   .msg.err{ color: rgba(255,120,120,.95); }
   .msg.ok{ color: rgba(70,240,150,.95); }
 
@@ -190,18 +162,13 @@
   .table th{
     font-size: 12px;
     color: var(--muted);
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: .3px;
     background: rgba(255,255,255,0.04);
   }
   .table tr:last-child td{ border-bottom: none; }
 
-  .colorBadge{
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    font-weight:800;
-  }
+  .colorBadge{ display:inline-flex; align-items:center; gap:10px; font-weight:900; }
   .swatch{
     width:12px;height:12px;border-radius:4px;
     border: 1px solid rgba(255,255,255,0.18);
@@ -213,14 +180,8 @@
   .swK{ background:#2b2b2b; }
   .swMB{ background:#7cff4d; }
 
-  .split2{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  @media (max-width: 520px){
-    .split2{ grid-template-columns: 1fr; }
-  }
+  .split2{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px){ .split2{ grid-template-columns: 1fr; } }
 
   .history{
     border: 1px solid var(--border);
@@ -230,34 +191,15 @@
     max-height: 330px;
     overflow:auto;
   }
-  .hItem{
-    padding: 10px 10px;
-    border-bottom: 1px dashed rgba(255,255,255,0.15);
-  }
+  .hItem{ padding: 10px 10px; border-bottom: 1px dashed rgba(255,255,255,0.15); }
   .hItem:last-child{ border-bottom:none; }
-  .hTop{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    flex-wrap:wrap;
-    font-size: 12px;
-    color: var(--muted);
-  }
-  .hMid{
-    margin-top: 6px;
-    font-size: 13px;
-    color: var(--text);
-    font-weight: 750;
-  }
-  .hSub{
-    margin-top: 3px;
-    font-size: 12px;
-    color: var(--muted);
-  }
+  .hTop{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size: 12px; color: var(--muted); }
+  .hMid{ margin-top: 6px; font-size: 13px; color: var(--text); font-weight: 800; }
+  .hSub{ margin-top: 3px; font-size: 12px; color: var(--muted); }
 
   /* ✅ LOW STOCK NEON RED (below 2) */
   .lowStock{
-    color: #ff2b2b;
+    color: var(--danger);
     font-weight: 900;
     text-shadow:
       0 0 6px rgba(255, 43, 43, 0.95),
@@ -265,9 +207,7 @@
       0 0 40px rgba(255, 43, 43, 0.55);
   }
   .lowPill{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
+    display:inline-flex; align-items:center; gap:8px;
     padding: 6px 10px;
     border-radius: 999px;
     border: 1px solid rgba(255, 43, 43, 0.35);
@@ -277,7 +217,7 @@
   }
   .lowDot{
     width:8px;height:8px;border-radius:999px;
-    background:#ff2b2b;
+    background: var(--danger);
     box-shadow: 0 0 12px rgba(255,43,43,0.9);
   }
 
@@ -290,6 +230,74 @@
     animation: spin .8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ✅ CONFIRMATION TOAST */
+  .toastOverlay{
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 18px 14px;
+    background: rgba(0,0,0,0.30);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+  }
+  .toast{
+    width: min(560px, 96vw);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(10, 14, 30, 0.86);
+    box-shadow: 0 18px 70px rgba(0,0,0,.45);
+    padding: 14px;
+    transform: translateY(10px);
+    opacity: 0;
+    animation: toastIn .18s ease-out forwards;
+  }
+  @keyframes toastIn{
+    to{ transform: translateY(0); opacity: 1; }
+  }
+  .toastTop{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .toastTitle{
+    font-weight: 900;
+    letter-spacing:.2px;
+    margin:0;
+    font-size: 14px;
+  }
+  .toastText{
+    margin: 6px 0 0 0;
+    color: rgba(255,255,255,0.72);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .toastActions{
+    display:flex;
+    gap:10px;
+    margin-top: 12px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .btnToast{
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: .2px;
+  }
+  .btnToastConfirm{
+    background: linear-gradient(135deg, rgba(33,195,107,.95), rgba(19,164,85,.85));
+    color:#07150c;
+  }
+  .btnToastCancel{
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.90);
+  }
 
   .footerNote{
     margin-top: 14px;
@@ -318,11 +326,9 @@
           <span class="pill">PIN required</span>
         </div>
 
-        <div class="inputs">
-          <div>
-            <label for="pin">PIN</label>
-            <input id="pin" placeholder="Enter your PIN" autocomplete="off" />
-          </div>
+        <div>
+          <label for="pin">PIN</label>
+          <input id="pin" placeholder="Enter your PIN" autocomplete="off" />
         </div>
 
         <div class="btnRow">
@@ -430,6 +436,22 @@
 
   </div>
 
+  <!-- ✅ CONFIRM TOAST OVERLAY -->
+  <div id="toastOverlay" class="toastOverlay" role="dialog" aria-modal="true" aria-label="Confirmation">
+    <div class="toast">
+      <div class="toastTop">
+        <div>
+          <div class="toastTitle" id="toastTitle">Confirm</div>
+          <div class="toastText" id="toastText"></div>
+        </div>
+      </div>
+      <div class="toastActions">
+        <button id="toastCancel" class="btnToast btnToastCancel" type="button">Cancel</button>
+        <button id="toastConfirm" class="btnToast btnToastConfirm" type="button">Yes, Continue</button>
+      </div>
+    </div>
+  </div>
+
 <script>
   let currentPin = "";
   let state = null;
@@ -438,13 +460,67 @@
   function show(id, on){ $(id).style.display = on ? "block" : "none"; }
   function setText(id, t){ $(id).textContent = t || ""; }
 
+  // -------- Login button states --------
   function setLoginLoading(on){
     const btn = $("loginBtn");
     $("loginSpinner").style.display = on ? "inline-block" : "none";
     $("loginBtnText").textContent = on ? "Logging in..." : "Login";
     btn.disabled = on;
-    btn.style.opacity = on ? "0.9" : "1";
+    btn.style.opacity = on ? "0.92" : "1";
     $("pin").disabled = on;
+    btn.classList.remove("btnSuccess","successPulse");
+  }
+
+  function setLoginSuccess(){
+    const btn = $("loginBtn");
+    $("loginSpinner").style.display = "none";
+    $("loginBtnText").textContent = "✅ Login Success";
+    btn.classList.add("btnSuccess","successPulse");
+    btn.disabled = true;
+    $("pin").disabled = true;
+  }
+
+  function resetLoginButton(){
+    const btn = $("loginBtn");
+    btn.classList.remove("btnSuccess","successPulse");
+    btn.disabled = false;
+    $("pin").disabled = false;
+    $("loginSpinner").style.display = "none";
+    $("loginBtnText").textContent = "Login";
+    btn.style.opacity = "1";
+  }
+
+  // -------- Confirmation toast (promise) --------
+  function confirmToast({ title="Confirm", text="Are you sure?" } = {}){
+    return new Promise((resolve) => {
+      const overlay = $("toastOverlay");
+      $("toastTitle").textContent = title;
+      $("toastText").textContent = text;
+
+      const cleanup = (val) => {
+        overlay.style.display = "none";
+        document.removeEventListener("keydown", onKey);
+        $("toastCancel").onclick = null;
+        $("toastConfirm").onclick = null;
+        overlay.onclick = null;
+        resolve(val);
+      };
+
+      const onKey = (e) => {
+        if (e.key === "Escape") cleanup(false);
+      };
+
+      overlay.style.display = "flex";
+      document.addEventListener("keydown", onKey);
+
+      $("toastCancel").onclick = () => cleanup(false);
+      $("toastConfirm").onclick = () => cleanup(true);
+
+      // click outside the toast cancels
+      overlay.onclick = (e) => {
+        if (e.target === overlay) cleanup(false);
+      };
+    });
   }
 
   async function loadState(){
@@ -475,6 +551,10 @@
 
   function cap(s){
     return String(s || "").charAt(0).toUpperCase() + String(s || "").slice(1);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
 
   function render(){
@@ -517,10 +597,7 @@
     $("history").innerHTML = hist || `<div style="color:rgba(255,255,255,.6);font-size:12px;padding:10px;">No history yet.</div>`;
   }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-
+  // ✅ Login with loading + success animation
   $("loginBtn").onclick = async () => {
     setText("loginErr","");
     currentPin = $("pin").value.trim();
@@ -537,14 +614,23 @@
 
       $("who").textContent = name;
 
-      show("login", false);
-      show("app", true);
-      setText("err",""); setText("ok","");
-      render();
+      // show success on the button first
+      setLoginSuccess();
+
+      // short delay so user sees "Login Success" animation
+      setTimeout(() => {
+        show("login", false);
+        show("app", true);
+        setText("err",""); setText("ok","");
+        render();
+      }, 650);
+
     }catch(e){
       setText("loginErr", e.message);
     }finally{
-      setLoginLoading(false);
+      // if login failed, restore button state
+      const hasError = !!$("loginErr").textContent;
+      if (hasError) resetLoginButton();
     }
   };
 
@@ -554,6 +640,7 @@
     show("app", false);
     show("login", true);
     setText("loginErr","");
+    resetLoginButton();
   };
 
   $("refreshBtn").onclick = async () => {
@@ -562,12 +649,25 @@
     catch(e){ setText("err", e.message); }
   };
 
+  // ✅ Apply requires confirmation toast
   $("applyBtn").onclick = async () => {
     setText("err",""); setText("ok","");
-    const color = $("color").value;  // includes MB
+
+    const color = $("color").value; // includes MB
     const action = $("action").value;
     const amount = Number(($("amount").value || "").trim());
-    if(!Number.isFinite(amount) || amount <= 0) return setText("err","Please enter a valid amount.");
+
+    if(!Number.isFinite(amount) || amount <= 0) {
+      return setText("err","Please enter a valid amount.");
+    }
+
+    const item = itemName(color) + " (" + color + ")";
+    const ok = await confirmToast({
+      title: "Confirm Update",
+      text: `Apply this update?\n\nItem: ${item}\nAction: ${cap(action)}\nAmount: ${amount}`
+    });
+
+    if (!ok) return;
 
     try{
       const r = await fetch("/api/update", {
@@ -579,7 +679,6 @@
       if(!r.ok) return setText("err", data.error || "Update failed");
 
       state = data;
-      // Ensure MB exists after update too
       state.stock = state.stock || {};
       if(typeof state.stock.MB !== "number") state.stock.MB = 0;
 
