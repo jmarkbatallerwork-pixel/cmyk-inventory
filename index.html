@@ -132,6 +132,7 @@
     gap:10px;
     flex-wrap:wrap;
     margin-top: 10px;
+    align-items:center;
   }
   button{
     border:none;
@@ -148,6 +149,10 @@
     background: linear-gradient(135deg, rgba(123,97,255,.95), rgba(0,209,255,.75));
     color: #0b1020;
     flex: 1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
   }
   .btnGhost{
     background: rgba(255,255,255,0.07);
@@ -276,6 +281,16 @@
     box-shadow: 0 0 12px rgba(255,43,43,0.9);
   }
 
+  /* ✅ LOGIN LOADING SPINNER */
+  .spinner{
+    width:16px;height:16px;
+    border-radius:999px;
+    border: 2px solid rgba(0,0,0,0.25);
+    border-top-color: rgba(0,0,0,0.75);
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   .footerNote{
     margin-top: 14px;
     text-align:center;
@@ -311,7 +326,10 @@
         </div>
 
         <div class="btnRow">
-          <button class="btnPrimary" id="loginBtn">Login</button>
+          <button class="btnPrimary" id="loginBtn">
+            <span id="loginBtnText">Login</span>
+            <span id="loginSpinner" class="spinner" style="display:none;"></span>
+          </button>
         </div>
 
         <div class="msg err" id="loginErr"></div>
@@ -420,6 +438,15 @@
   function show(id, on){ $(id).style.display = on ? "block" : "none"; }
   function setText(id, t){ $(id).textContent = t || ""; }
 
+  function setLoginLoading(on){
+    const btn = $("loginBtn");
+    $("loginSpinner").style.display = on ? "inline-block" : "none";
+    $("loginBtnText").textContent = on ? "Logging in..." : "Login";
+    btn.disabled = on;
+    btn.style.opacity = on ? "0.9" : "1";
+    $("pin").disabled = on;
+  }
+
   async function loadState(){
     const r = await fetch("/api/state");
     if(!r.ok) throw new Error("Failed to load state");
@@ -499,10 +526,14 @@
     currentPin = $("pin").value.trim();
     if(!currentPin) return setText("loginErr","Please enter your PIN.");
 
+    setLoginLoading(true);
     try{
       await loadState();
       const name = state.users?.[currentPin];
-      if(!name) return setText("loginErr","Invalid PIN.");
+      if(!name){
+        setText("loginErr","Invalid PIN.");
+        return;
+      }
 
       $("who").textContent = name;
 
@@ -512,6 +543,8 @@
       render();
     }catch(e){
       setText("loginErr", e.message);
+    }finally{
+      setLoginLoading(false);
     }
   };
 
