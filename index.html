@@ -3,152 +3,51 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CMYK Pigment Inventory</title>
-
+<title>CMYK Inventory (Shared)</title>
 <style>
-body{
-  font-family:Arial,Helvetica,sans-serif;
-  background:#f5f6fa;
-  padding:20px;
-}
-
-.card{
-  max-width:900px;
-  margin:auto;
-  background:#fff;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,.1);
-}
-
-input,select,button{
-  padding:10px;
-  margin:6px 0;
-  width:100%;
-  border-radius:8px;
-  border:1px solid #ccc;
-  font-size:14px;
-}
-
-button{
-  background:#111;
-  color:#fff;
-  cursor:pointer;
-}
-
-button.secondary{
-  background:#fff;
-  color:#111;
-}
-
-button.danger{
-  background:#c62828;
-}
-
-.row{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.row>*{ flex:1; }
-
-.table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-.table th,.table td{
-  padding:10px;
-  border-bottom:1px solid #eee;
-  text-align:left;
-}
-
-.history{
-  border:1px solid #eee;
-  padding:10px;
-  border-radius:8px;
-  max-height:250px;
-  overflow:auto;
-  background:#fafafa;
-}
-
-.pin{
-  letter-spacing:3px;
-  text-align:center;
-  font-size:18px;
-}
-
-.userTag{
-  background:#111;
-  color:#fff;
-  padding:6px 12px;
-  border-radius:6px;
-  font-size:12px;
-}
-
-.small{
-  font-size:12px;
-  color:#666;
-}
+  body{font-family:Arial;background:#f5f6fa;padding:20px}
+  .card{max-width:900px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  input,select,button{padding:10px;margin:6px 0;width:100%;border-radius:10px;border:1px solid #ccc}
+  button{background:#111;color:#fff;cursor:pointer}
+  button.secondary{background:#fff;color:#111}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>*{flex:1;min-width:200px}
+  .table{width:100%;border-collapse:collapse;margin-top:10px}
+  .table th,.table td{border-bottom:1px solid #eee;padding:10px;text-align:left}
+  .history{border:1px solid #eee;background:#fafafa;border-radius:10px;padding:10px;max-height:260px;overflow:auto}
+  .err{color:#c62828}
+  .ok{color:#2e7d32}
+  .tag{display:inline-block;background:#111;color:#fff;padding:6px 10px;border-radius:8px;font-size:12px}
 </style>
 </head>
-
 <body>
 
-<!-- ===============================
-   EMBEDDED DATA (saved inside HTML)
-================================ -->
-<script id="EMBEDDED_DATA" type="application/json">
-{
-  "users":{
-    "JCOHR4321":"JCO HR",
-    "JCOIT0625":"JCO IT"
-  },
-  "stock":{"C":0,"M":0,"Y":0,"K":0},
-  "history":[]
-}
-</script>
-
-
-<!-- ===============================
-   LOGIN SCREEN
-================================ -->
 <div id="login" class="card">
   <h2>🔒 PIN Login</h2>
-
-  <input id="pinInput" class="pin" placeholder="Enter PIN">
-
+  <input id="pin" placeholder="Enter PIN (e.g. JCOHR4321)" />
   <button id="loginBtn">Login</button>
-
-  <div class="small">
-    Users:<br>
-    JCO HR → JCOHR4321<br>
-    JCO IT → JCOIT0625
+  <div class="err" id="loginErr"></div>
+  <div style="font-size:12px;color:#666;margin-top:8px;">
+    JCO HR: JCOHR4321<br/>
+    JCO IT: JCOIT0625
   </div>
-
-  <div id="loginMsg" style="color:red"></div>
 </div>
 
-
-<!-- ===============================
-   MAIN APP
-================================ -->
-<div id="app" class="card" style="display:none">
-
+<div id="app" class="card" style="display:none;">
   <div class="row">
-    <span id="userLabel" class="userTag"></span>
-    <button id="logout" class="secondary">Logout</button>
-    <button id="export" class="secondary">Export HTML (embed data)</button>
-    <button id="clear" class="danger">Clear Data</button>
+    <div><span class="tag" id="who"></span></div>
+    <button class="secondary" id="refreshBtn">Refresh</button>
+    <button class="secondary" id="logoutBtn">Logout</button>
   </div>
 
-  <h2>CMYK Pigment Inventory</h2>
+  <h2>CMYK Pigment Inventory (Shared)</h2>
 
-  <table class="table" id="stockTable"></table>
+  <table class="table">
+    <thead><tr><th>Color</th><th>Stock</th></tr></thead>
+    <tbody id="stockRows"></tbody>
+  </table>
 
   <h3>Update Stock</h3>
-
   <div class="row">
     <select id="color">
       <option value="C">Cyan (C)</option>
@@ -156,217 +55,108 @@ button.danger{
       <option value="Y">Yellow (Y)</option>
       <option value="K">Black (K)</option>
     </select>
-
     <select id="action">
       <option value="add">Add</option>
       <option value="reduce">Reduce</option>
     </select>
-
-    <input id="amount" placeholder="Amount">
+    <input id="amount" placeholder="Amount" inputmode="numeric" />
   </div>
+  <button id="applyBtn">Apply</button>
 
-  <button id="apply">Apply</button>
+  <div class="err" id="err"></div>
+  <div class="ok" id="ok"></div>
 
   <h3>History</h3>
-  <div id="history" class="history"></div>
-
+  <div class="history" id="history"></div>
 </div>
 
-
 <script>
-/* ===============================
-   LOAD EMBEDDED DATA
-================================ */
-const embedded = JSON.parse(
-  document.getElementById("EMBEDDED_DATA").textContent
-);
+  let currentPin = "";
+  let state = null;
 
-const LS_KEY = "CMYK_USERS_INV_V1";
+  const $ = (id) => document.getElementById(id);
 
-/* ===============================
-   STATE
-================================ */
-let state = JSON.parse(localStorage.getItem(LS_KEY)) || embedded;
-let currentUser = "";
+  function show(id, on){ $(id).style.display = on ? "block" : "none"; }
+  function setText(id, t){ $(id).textContent = t || ""; }
 
-
-/* ===============================
-   SAVE
-================================ */
-function save(){
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-}
-
-
-/* ===============================
-   ELEMENTS
-================================ */
-const loginDiv = document.getElementById("login");
-const appDiv   = document.getElementById("app");
-
-const pinInput = document.getElementById("pinInput");
-const loginBtn = document.getElementById("loginBtn");
-const loginMsg = document.getElementById("loginMsg");
-
-const stockTable = document.getElementById("stockTable");
-const historyBox = document.getElementById("history");
-
-const colorSel  = document.getElementById("color");
-const actionSel = document.getElementById("action");
-const amountInp = document.getElementById("amount");
-
-const applyBtn  = document.getElementById("apply");
-
-const logoutBtn = document.getElementById("logout");
-const exportBtn = document.getElementById("export");
-const clearBtn  = document.getElementById("clear");
-
-const userLabel = document.getElementById("userLabel");
-
-
-/* ===============================
-   LOGIN
-================================ */
-loginBtn.onclick = () => {
-
-  const pin = pinInput.value.trim();
-
-  if(!state.users[pin]){
-    loginMsg.textContent = "Invalid PIN";
-    return;
+  async function loadState(){
+    const r = await fetch("/api/state");
+    if(!r.ok) throw new Error("Failed to load state");
+    state = await r.json();
   }
 
-  currentUser = state.users[pin];
+  function render(){
+    const rows = ["C","M","Y","K"].map(c => `<tr><td>${c}</td><td>${state.stock[c] ?? 0}</td></tr>`).join("");
+    $("stockRows").innerHTML = rows;
 
-  userLabel.textContent = currentUser;
-
-  loginDiv.style.display="none";
-  appDiv.style.display="block";
-
-  render();
-};
-
-logoutBtn.onclick = () => {
-  currentUser="";
-  loginDiv.style.display="block";
-  appDiv.style.display="none";
-};
-
-
-/* ===============================
-   RENDER
-================================ */
-function render(){
-
-  stockTable.innerHTML = "<tr><th>Color</th><th>Stock</th></tr>";
-
-  for(let c of ["C","M","Y","K"]){
-    stockTable.innerHTML += `<tr><td>${c}</td><td>${state.stock[c]}</td></tr>`;
+    const hist = (state.history || []).map(h =>
+      `<div style="padding:6px 0;border-bottom:1px dashed #ddd;">
+        <div><b>${h.user}</b> • ${h.date}</div>
+        <div style="font-size:12px;color:#555;">
+          ${h.color} ${h.action} ${h.amount} (${h.before} → ${h.after})
+        </div>
+      </div>`
+    ).join("");
+    $("history").innerHTML = hist || `<div style="color:#666;font-size:12px;">No history yet.</div>`;
   }
 
-  historyBox.innerHTML = "";
+  $("loginBtn").onclick = async () => {
+    setText("loginErr","");
+    currentPin = $("pin").value.trim();
+    if(!currentPin) return setText("loginErr","Enter PIN.");
 
-  state.history.forEach(h=>{
-    historyBox.innerHTML += `
-      <div>
-      ${h.date} | <b>${h.user}</b> | ${h.color} ${h.action} ${h.amount}
-      (${h.before} → ${h.after})
-      </div>
-    `;
-  });
-}
+    try{
+      await loadState();
+      const name = state.users?.[currentPin];
+      if(!name) return setText("loginErr","Invalid PIN.");
 
+      $("who").textContent = name;
 
-/* ===============================
-   TIME
-================================ */
-function stamp(){
-  return new Date().toLocaleString();
-}
+      show("login", false);
+      show("app", true);
+      render();
+    }catch(e){
+      setText("loginErr", e.message);
+    }
+  };
 
+  $("logoutBtn").onclick = () => {
+    currentPin = "";
+    $("pin").value = "";
+    show("app", false);
+    show("login", true);
+  };
 
-/* ===============================
-   APPLY STOCK CHANGE
-================================ */
-applyBtn.onclick = () => {
+  $("refreshBtn").onclick = async () => {
+    setText("err",""); setText("ok","");
+    try{ await loadState(); render(); setText("ok","Refreshed."); }
+    catch(e){ setText("err", e.message); }
+  };
 
-  const c = colorSel.value;
-  const action = actionSel.value;
-  const amt = parseInt(amountInp.value);
+  $("applyBtn").onclick = async () => {
+    setText("err",""); setText("ok","");
+    const color = $("color").value;
+    const action = $("action").value;
+    const amount = Number(($("amount").value || "").trim());
+    if(!Number.isFinite(amount) || amount <= 0) return setText("err","Enter a valid amount.");
 
-  if(!amt) return;
+    try{
+      const r = await fetch("/api/update", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ pin: currentPin, color, action, amount })
+      });
+      const data = await r.json();
+      if(!r.ok) return setText("err", data.error || "Update failed");
 
-  const before = state.stock[c];
-  const after = action==="add" ? before+amt : before-amt;
-
-  if(after < 0) return;
-
-  state.stock[c] = after;
-
-  state.history.unshift({
-    date: stamp(),
-    user: currentUser,
-    color: c,
-    action: action,
-    amount: amt,
-    before: before,
-    after: after
-  });
-
-  save();
-
-  amountInp.value="";
-
-  render();
-};
-
-
-/* ===============================
-   CLEAR DATA
-================================ */
-clearBtn.onclick = () => {
-  if(!confirm("Clear all data?")) return;
-
-  state = JSON.parse(JSON.stringify(embedded));
-  save();
-  render();
-};
-
-
-/* ===============================
-   EXPORT (safe DOM method)
-================================ */
-exportBtn.onclick = () => {
-
-  const parser = new DOMParser();
-
-  const doc = parser.parseFromString(
-    document.documentElement.outerHTML,
-    "text/html"
-  );
-
-  doc.getElementById("EMBEDDED_DATA").textContent =
-    JSON.stringify(state, null, 2);
-
-  const html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-
-  const blob = new Blob([html], {type:"text/html"});
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "inventory.html";
-  a.click();
-
-  URL.revokeObjectURL(url);
-};
-
-
-/* ===============================
-   INIT
-================================ */
-render();
-
+      state = data;
+      $("amount").value = "";
+      render();
+      setText("ok","Saved.");
+    }catch(e){
+      setText("err", e.message);
+    }
+  };
 </script>
 
 </body>
