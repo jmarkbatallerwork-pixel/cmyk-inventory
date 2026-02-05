@@ -3,79 +3,403 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CMYK Inventory (Shared)</title>
+<title>JCO - PIGMENT INK INVENTORY</title>
+
 <style>
-  body{font-family:Arial;background:#f5f6fa;padding:20px}
-  .card{max-width:900px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-  input,select,button{padding:10px;margin:6px 0;width:100%;border-radius:10px;border:1px solid #ccc}
-  button{background:#111;color:#fff;cursor:pointer}
-  button.secondary{background:#fff;color:#111}
-  .row{display:flex;gap:10px;flex-wrap:wrap}
-  .row>*{flex:1;min-width:200px}
-  .table{width:100%;border-collapse:collapse;margin-top:10px}
-  .table th,.table td{border-bottom:1px solid #eee;padding:10px;text-align:left}
-  .history{border:1px solid #eee;background:#fafafa;border-radius:10px;padding:10px;max-height:260px;overflow:auto}
-  .err{color:#c62828}
-  .ok{color:#2e7d32}
-  .tag{display:inline-block;background:#111;color:#fff;padding:6px 10px;border-radius:8px;font-size:12px}
+  :root{
+    --bg: #0b1020;
+    --card: rgba(255,255,255,0.08);
+    --card2: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.12);
+    --text: rgba(255,255,255,0.92);
+    --muted: rgba(255,255,255,0.65);
+    --danger: #ff4d4d;
+    --ok: #21c36b;
+    --shadow: 0 18px 60px rgba(0,0,0,.35);
+    --radius: 16px;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 10% 10%, rgba(123,97,255,.35), transparent 60%),
+      radial-gradient(900px 500px at 90% 20%, rgba(0,209,255,.25), transparent 55%),
+      radial-gradient(800px 500px at 50% 90%, rgba(33,195,107,.20), transparent 55%),
+      linear-gradient(180deg, #070a14 0%, #0b1020 55%, #070a14 100%);
+    padding: 28px 16px;
+  }
+
+  .shell{
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom: 16px;
+  }
+  .brand h1{
+    margin:0;
+    font-size: 18px;
+    letter-spacing: .5px;
+    font-weight: 750;
+  }
+  .brand .sub{
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .card{
+    background: linear-gradient(180deg, var(--card), var(--card2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+
+  .cardPad{ padding: 18px; }
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: 14px;
+  }
+  @media (max-width: 860px){
+    .grid{ grid-template-columns: 1fr; }
+  }
+
+  .titleRow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom: 10px;
+  }
+  .titleRow h2{
+    margin:0;
+    font-size: 16px;
+    font-weight: 750;
+    letter-spacing: .3px;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.06);
+    font-size: 12px;
+    color: var(--muted);
+    white-space:nowrap;
+  }
+  .whoDot{
+    width:10px;height:10px;border-radius:50%;
+    background: rgba(255,255,255,.8);
+    box-shadow: 0 0 18px rgba(255,255,255,.35);
+  }
+
+  .inputs{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:10px;
+  }
+
+  label{
+    display:block;
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 6px 2px;
+  }
+
+  input, select{
+    width:100%;
+    padding: 12px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.14);
+    outline:none;
+    background: rgba(0,0,0,0.25);
+    color: var(--text);
+    font-size: 14px;
+  }
+  input::placeholder{ color: rgba(255,255,255,0.35); }
+  input:focus, select:focus{
+    border-color: rgba(123,97,255,.55);
+    box-shadow: 0 0 0 4px rgba(123,97,255,.16);
+  }
+
+  .btnRow{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top: 10px;
+  }
+  button{
+    border:none;
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor:pointer;
+    font-weight: 700;
+    letter-spacing:.2px;
+    transition: transform .06s ease, filter .12s ease, opacity .12s ease;
+  }
+  button:active{ transform: translateY(1px); }
+
+  .btnPrimary{
+    background: linear-gradient(135deg, rgba(123,97,255,.95), rgba(0,209,255,.75));
+    color: #0b1020;
+    flex: 1;
+  }
+  .btnGhost{
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btnDanger{
+    background: rgba(255,77,77,.14);
+    border: 1px solid rgba(255,77,77,.35);
+    color: rgba(255,255,255,.92);
+  }
+  .btnSmall{
+    padding: 10px 12px;
+    font-size: 12px;
+    border-radius: 12px;
+  }
+
+  .msg{
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .msg.err{ color: rgba(255,120,120,.95); }
+  .msg.ok{ color: rgba(70,240,150,.95); }
+
+  .table{
+    width:100%;
+    border-collapse: collapse;
+    overflow:hidden;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,0.18);
+  }
+  .table th, .table td{
+    padding: 12px 12px;
+    text-align:left;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .table th{
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+    letter-spacing: .3px;
+    background: rgba(255,255,255,0.04);
+  }
+  .table tr:last-child td{ border-bottom: none; }
+
+  .colorBadge{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+  }
+  .swatch{
+    width:12px;height:12px;border-radius:4px;
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 0 14px rgba(0,0,0,.25);
+  }
+  .swC{ background:#00b7ff; }
+  .swM{ background:#ff2da6; }
+  .swY{ background:#ffd400; }
+  .swK{ background:#2b2b2b; }
+
+  .split2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 520px){
+    .split2{ grid-template-columns: 1fr; }
+  }
+
+  .history{
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(0,0,0,0.18);
+    padding: 10px;
+    max-height: 330px;
+    overflow:auto;
+  }
+  .hItem{
+    padding: 10px 10px;
+    border-bottom: 1px dashed rgba(255,255,255,0.15);
+  }
+  .hItem:last-child{ border-bottom:none; }
+  .hTop{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .hMid{
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 750;
+  }
+  .hSub{
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .footerNote{
+    margin-top: 14px;
+    text-align:center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
 </style>
 </head>
+
 <body>
+  <div class="shell">
 
-<div id="login" class="card">
-  <h2>🔒 PIN Login</h2>
-  <input id="pin" placeholder="Enter PIN (e.g. JCOHR4321)" />
-  <button id="loginBtn">Login</button>
-  <div class="err" id="loginErr"></div>
-  <div style="font-size:12px;color:#666;margin-top:8px;">
-    JCO HR: JCOHR4321<br/>
-    JCO IT: JCOIT0625
+    <div class="brand">
+      <div>
+        <h1>JCO - PIGMENT INK INVENTORY</h1>
+        <div class="sub">Shared inventory • Updates saved to server</div>
+      </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login" class="card">
+      <div class="cardPad">
+        <div class="titleRow">
+          <h2>🔒 Secure Login</h2>
+          <span class="pill">PIN required</span>
+        </div>
+
+        <div class="inputs">
+          <div>
+            <label for="pin">PIN</label>
+            <input id="pin" placeholder="Enter your PIN" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="btnRow">
+          <button class="btnPrimary" id="loginBtn">Login</button>
+        </div>
+
+        <div class="msg err" id="loginErr"></div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app" class="card" style="display:none; margin-top:14px;">
+      <div class="cardPad">
+        <div class="titleRow">
+          <h2>Dashboard</h2>
+          <span class="pill"><span class="whoDot"></span><span id="who">—</span></span>
+        </div>
+
+        <div class="btnRow">
+          <button class="btnGhost btnSmall" id="refreshBtn">Refresh</button>
+          <button class="btnGhost btnSmall" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+
+      <div class="cardPad" style="padding-top:0;">
+        <div class="grid">
+
+          <!-- LEFT: STOCK + UPDATE -->
+          <div class="card" style="background:transparent;border:none;box-shadow:none;">
+            <div class="cardPad" style="padding:0;">
+              <div class="titleRow" style="margin-bottom:8px;">
+                <h2>Current Stock</h2>
+                <span class="pill">CMYK</span>
+              </div>
+
+              <table class="table">
+                <thead><tr><th>Color</th><th>Stock</th></tr></thead>
+                <tbody id="stockRows"></tbody>
+              </table>
+
+              <div style="height:12px;"></div>
+
+              <div class="titleRow" style="margin-bottom:6px;">
+                <h2>Update Stock</h2>
+                <span class="pill">Add / Reduce</span>
+              </div>
+
+              <div class="split2">
+                <div>
+                  <label for="color">Color</label>
+                  <select id="color">
+                    <option value="C">Cyan (C)</option>
+                    <option value="M">Magenta (M)</option>
+                    <option value="Y">Yellow (Y)</option>
+                    <option value="K">Black (K)</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="action">Action</label>
+                  <select id="action">
+                    <option value="add">Add</option>
+                    <option value="reduce">Reduce</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label for="amount">Amount</label>
+                <input id="amount" placeholder="Enter amount" inputmode="numeric" />
+              </div>
+
+              <div class="btnRow">
+                <button class="btnPrimary" id="applyBtn">Apply Update</button>
+              </div>
+
+              <div class="msg err" id="err"></div>
+              <div class="msg ok" id="ok"></div>
+            </div>
+          </div>
+
+          <!-- RIGHT: HISTORY -->
+          <div class="card" style="background:transparent;border:none;box-shadow:none;">
+            <div class="cardPad" style="padding:0;">
+              <div class="titleRow" style="margin-bottom:8px;">
+                <h2>History</h2>
+                <span class="pill">Latest first</span>
+              </div>
+
+              <div class="history" id="history"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="footerNote">JCO Inventory • CMYK Pigment Ink</div>
+      </div>
+    </div>
+
   </div>
-</div>
-
-<div id="app" class="card" style="display:none;">
-  <div class="row">
-    <div><span class="tag" id="who"></span></div>
-    <button class="secondary" id="refreshBtn">Refresh</button>
-    <button class="secondary" id="logoutBtn">Logout</button>
-  </div>
-
-  <h2>CMYK Pigment Inventory (Shared)</h2>
-
-  <table class="table">
-    <thead><tr><th>Color</th><th>Stock</th></tr></thead>
-    <tbody id="stockRows"></tbody>
-  </table>
-
-  <h3>Update Stock</h3>
-  <div class="row">
-    <select id="color">
-      <option value="C">Cyan (C)</option>
-      <option value="M">Magenta (M)</option>
-      <option value="Y">Yellow (Y)</option>
-      <option value="K">Black (K)</option>
-    </select>
-    <select id="action">
-      <option value="add">Add</option>
-      <option value="reduce">Reduce</option>
-    </select>
-    <input id="amount" placeholder="Amount" inputmode="numeric" />
-  </div>
-  <button id="applyBtn">Apply</button>
-
-  <div class="err" id="err"></div>
-  <div class="ok" id="ok"></div>
-
-  <h3>History</h3>
-  <div class="history" id="history"></div>
-</div>
 
 <script>
   let currentPin = "";
   let state = null;
 
   const $ = (id) => document.getElementById(id);
-
   function show(id, on){ $(id).style.display = on ? "block" : "none"; }
   function setText(id, t){ $(id).textContent = t || ""; }
 
@@ -85,25 +409,57 @@
     state = await r.json();
   }
 
+  function swatchClass(color){
+    return color === "C" ? "swC" : color === "M" ? "swM" : color === "Y" ? "swY" : "swK";
+  }
+
+  function colorName(color){
+    return color === "C" ? "Cyan" : color === "M" ? "Magenta" : color === "Y" ? "Yellow" : "Black";
+  }
+
+  function cap(s){
+    return String(s || "").charAt(0).toUpperCase() + String(s || "").slice(1);
+  }
+
   function render(){
-    const rows = ["C","M","Y","K"].map(c => `<tr><td>${c}</td><td>${state.stock[c] ?? 0}</td></tr>`).join("");
+    // stock table
+    const rows = ["C","M","Y","K"].map(c => `
+      <tr>
+        <td>
+          <span class="colorBadge">
+            <span class="swatch ${swatchClass(c)}"></span>
+            ${colorName(c)} (${c})
+          </span>
+        </td>
+        <td>${state.stock?.[c] ?? 0}</td>
+      </tr>
+    `).join("");
     $("stockRows").innerHTML = rows;
 
-    const hist = (state.history || []).map(h =>
-      `<div style="padding:6px 0;border-bottom:1px dashed #ddd;">
-        <div><b>${h.user}</b> • ${h.date}</div>
-        <div style="font-size:12px;color:#555;">
-          ${h.color} ${h.action} ${h.amount} (${h.before} → ${h.after})
+    // history list
+    const histArr = Array.isArray(state.history) ? state.history : [];
+    const hist = histArr.map(h => `
+      <div class="hItem">
+        <div class="hTop">
+          <div><b>${escapeHtml(h.user || "—")}</b></div>
+          <div>${escapeHtml(h.date || "")}</div>
         </div>
-      </div>`
-    ).join("");
-    $("history").innerHTML = hist || `<div style="color:#666;font-size:12px;">No history yet.</div>`;
+        <div class="hMid">${escapeHtml(h.color || "")} • ${escapeHtml(cap(h.action))} ${escapeHtml(String(h.amount))}</div>
+        <div class="hSub">Stock: ${escapeHtml(String(h.before))} → ${escapeHtml(String(h.after))}</div>
+      </div>
+    `).join("");
+
+    $("history").innerHTML = hist || `<div style="color:rgba(255,255,255,.6);font-size:12px;padding:10px;">No history yet.</div>`;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
 
   $("loginBtn").onclick = async () => {
     setText("loginErr","");
     currentPin = $("pin").value.trim();
-    if(!currentPin) return setText("loginErr","Enter PIN.");
+    if(!currentPin) return setText("loginErr","Please enter your PIN.");
 
     try{
       await loadState();
@@ -114,6 +470,7 @@
 
       show("login", false);
       show("app", true);
+      setText("err",""); setText("ok","");
       render();
     }catch(e){
       setText("loginErr", e.message);
@@ -125,6 +482,7 @@
     $("pin").value = "";
     show("app", false);
     show("login", true);
+    setText("loginErr","");
   };
 
   $("refreshBtn").onclick = async () => {
@@ -138,7 +496,7 @@
     const color = $("color").value;
     const action = $("action").value;
     const amount = Number(($("amount").value || "").trim());
-    if(!Number.isFinite(amount) || amount <= 0) return setText("err","Enter a valid amount.");
+    if(!Number.isFinite(amount) || amount <= 0) return setText("err","Please enter a valid amount.");
 
     try{
       const r = await fetch("/api/update", {
@@ -157,6 +515,11 @@
       setText("err", e.message);
     }
   };
+
+  // UX: Press Enter to login
+  $("pin").addEventListener("keydown", (e) => {
+    if(e.key === "Enter") $("loginBtn").click();
+  });
 </script>
 
 </body>
