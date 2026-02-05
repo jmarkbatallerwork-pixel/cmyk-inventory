@@ -206,6 +206,7 @@
   .swM{ background:#ff2da6; }
   .swY{ background:#ffd400; }
   .swK{ background:#2b2b2b; }
+  .swMB{ background:#7cff4d; }
 
   .split2{
     display:grid;
@@ -249,7 +250,7 @@
     color: var(--muted);
   }
 
-  /* ✅ LOW STOCK NEON RED */
+  /* ✅ LOW STOCK NEON RED (below 2) */
   .lowStock{
     color: #ff2b2b;
     font-weight: 900;
@@ -340,13 +341,13 @@
               <div class="titleRow" style="margin-bottom:8px;">
                 <h2>Current Stock</h2>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-                  <span class="pill">CMYK</span>
+                  <span class="pill">CMYK + MB</span>
                   <span id="lowBanner" style="display:none;" class="lowPill"><span class="lowDot"></span>Low stock detected</span>
                 </div>
               </div>
 
               <table class="table">
-                <thead><tr><th>Color</th><th>Stock</th></tr></thead>
+                <thead><tr><th>Item</th><th>Stock</th></tr></thead>
                 <tbody id="stockRows"></tbody>
               </table>
 
@@ -359,12 +360,13 @@
 
               <div class="split2">
                 <div>
-                  <label for="color">Color</label>
+                  <label for="color">Item</label>
                   <select id="color">
                     <option value="C">Cyan (C)</option>
                     <option value="M">Magenta (M)</option>
                     <option value="Y">Yellow (Y)</option>
                     <option value="K">Black (K)</option>
+                    <option value="MB">Maintenance Box (MB)</option>
                   </select>
                 </div>
                 <div>
@@ -422,14 +424,26 @@
     const r = await fetch("/api/state");
     if(!r.ok) throw new Error("Failed to load state");
     state = await r.json();
+
+    // Ensure MB exists even if old data doesn't have it yet
+    state.stock = state.stock || {};
+    if(typeof state.stock.MB !== "number") state.stock.MB = 0;
   }
 
   function swatchClass(color){
-    return color === "C" ? "swC" : color === "M" ? "swM" : color === "Y" ? "swY" : "swK";
+    return color === "C" ? "swC"
+      : color === "M" ? "swM"
+      : color === "Y" ? "swY"
+      : color === "K" ? "swK"
+      : "swMB";
   }
 
-  function colorName(color){
-    return color === "C" ? "Cyan" : color === "M" ? "Magenta" : color === "Y" ? "Yellow" : "Black";
+  function itemName(code){
+    return code === "C" ? "Cyan"
+      : code === "M" ? "Magenta"
+      : code === "Y" ? "Yellow"
+      : code === "K" ? "Black"
+      : "Maintenance Box";
   }
 
   function cap(s){
@@ -437,16 +451,14 @@
   }
 
   function render(){
-    // ✅ Low stock = below 2
+    const ITEMS = ["C","M","Y","K","MB"];
     const getStock = (c) => Number(state.stock?.[c] ?? 0);
     const isLow = (n) => n < 2;
 
-    // banner if any low
-    const anyLow = ["C","M","Y","K"].some(c => isLow(getStock(c)));
+    const anyLow = ITEMS.some(c => isLow(getStock(c)));
     $("lowBanner").style.display = anyLow ? "inline-flex" : "none";
 
-    // stock table (neon red if low)
-    const rows = ["C","M","Y","K"].map(c => {
+    const rows = ITEMS.map(c => {
       const n = getStock(c);
       const stockClass = isLow(n) ? "lowStock" : "";
       return `
@@ -454,7 +466,7 @@
           <td>
             <span class="colorBadge">
               <span class="swatch ${swatchClass(c)}"></span>
-              ${colorName(c)} (${c})
+              ${itemName(c)} (${c})
             </span>
           </td>
           <td class="${stockClass}">${n}</td>
@@ -463,7 +475,6 @@
     }).join("");
     $("stockRows").innerHTML = rows;
 
-    // history list
     const histArr = Array.isArray(state.history) ? state.history : [];
     const hist = histArr.map(h => `
       <div class="hItem">
@@ -520,7 +531,7 @@
 
   $("applyBtn").onclick = async () => {
     setText("err",""); setText("ok","");
-    const color = $("color").value;
+    const color = $("color").value;  // includes MB
     const action = $("action").value;
     const amount = Number(($("amount").value || "").trim());
     if(!Number.isFinite(amount) || amount <= 0) return setText("err","Please enter a valid amount.");
@@ -535,6 +546,10 @@
       if(!r.ok) return setText("err", data.error || "Update failed");
 
       state = data;
+      // Ensure MB exists after update too
+      state.stock = state.stock || {};
+      if(typeof state.stock.MB !== "number") state.stock.MB = 0;
+
       $("amount").value = "";
       render();
       setText("ok","Saved.");
@@ -543,7 +558,6 @@
     }
   };
 
-  // UX: Press Enter to login
   $("pin").addEventListener("keydown", (e) => {
     if(e.key === "Enter") $("loginBtn").click();
   });
