@@ -7,7 +7,6 @@
 
 <style>
   :root{
-    --bg: #0b1020;
     --card: rgba(255,255,255,0.08);
     --card2: rgba(255,255,255,0.06);
     --border: rgba(255,255,255,0.12);
@@ -38,13 +37,7 @@
 
   .shell{ max-width: 980px; margin: 0 auto; }
 
-  .brand{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom: 16px;
-  }
+  .brand{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 16px; }
   .brand h1{ margin:0; font-size: 18px; letter-spacing: .5px; font-weight: 750; }
   .brand .sub{ font-size: 12px; color: var(--muted); }
 
@@ -98,17 +91,13 @@
   .statusDot{
     width:10px;height:10px;border-radius:999px;
     background: rgba(255,255,255,0.35);
-    box-shadow: 0 0 0 rgba(0,0,0,0);
   }
   .statusOnline .statusDot{
     background: var(--ok);
     box-shadow: 0 0 12px rgba(33,195,107,0.9);
     animation: pulse 1.4s ease-in-out infinite;
   }
-  .statusOffline .statusDot{
-    background: rgba(255,255,255,0.30);
-    box-shadow: 0 0 0 rgba(0,0,0,0);
-  }
+  .statusOffline .statusDot{ background: rgba(255,255,255,0.30); }
   .statusChecking .statusDot{
     background: var(--warn);
     box-shadow: 0 0 10px rgba(255,204,0,0.7);
@@ -180,10 +169,6 @@
   .successPulse{ animation: pop .28s ease-out, glow 1s ease-in-out infinite alternate; }
   @keyframes pop{ 0%{ transform: scale(.98); } 60%{ transform: scale(1.02); } 100%{ transform: scale(1); } }
   @keyframes glow{ from{ filter: brightness(1); } to{ filter: brightness(1.08); } }
-
-  .msg{ margin-top: 10px; font-size: 13px; color: var(--muted); }
-  .msg.err{ color: rgba(255,120,120,.95); }
-  .msg.ok{ color: rgba(70,240,150,.95); }
 
   .table{
     width:100%;
@@ -327,6 +312,69 @@
     color: rgba(255,255,255,0.90);
   }
 
+  /* ✅ RIGHT-SIDE SUCCESS NOTIFICATION */
+  .rightNotifWrap{
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 10000;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    pointer-events:none;
+  }
+  .notif{
+    width: min(380px, calc(100vw - 36px));
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(8, 14, 26, 0.86);
+    box-shadow: 0 18px 70px rgba(0,0,0,.45);
+    overflow:hidden;
+    transform: translateX(14px);
+    opacity: 0;
+    animation: notifIn .18s ease-out forwards;
+    pointer-events:auto;
+  }
+  @keyframes notifIn{
+    to{ transform: translateX(0); opacity: 1; }
+  }
+  .notifBar{
+    height: 4px;
+    background: linear-gradient(90deg, rgba(33,195,107,.95), rgba(0,209,255,.65));
+  }
+  .notifBody{
+    padding: 12px 12px;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  .notifIcon{
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: rgba(33,195,107,0.18);
+    border: 1px solid rgba(33,195,107,0.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: rgba(255,255,255,0.92);
+    font-weight: 900;
+    flex: 0 0 auto;
+    box-shadow: 0 0 16px rgba(33,195,107,0.18);
+  }
+  .notifTitle{
+    margin:0;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing:.2px;
+  }
+  .notifText{
+    margin-top: 4px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.72);
+    line-height: 1.35;
+    white-space: pre-wrap;
+  }
   .footerNote{
     margin-top: 14px;
     text-align:center;
@@ -376,7 +424,6 @@
         <div class="titleRow">
           <h2>Dashboard</h2>
 
-          <!-- ✅ ONLINE STATUS + USER -->
           <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
             <span id="netStatus" class="statusPill statusChecking">
               <span class="statusDot"></span>
@@ -446,9 +493,6 @@
               <div class="btnRow">
                 <button class="btnPrimary" id="applyBtn">Apply Update</button>
               </div>
-
-              <div class="msg err" id="err"></div>
-              <div class="msg ok" id="ok"></div>
             </div>
           </div>
 
@@ -486,6 +530,9 @@
     </div>
   </div>
 
+  <!-- ✅ RIGHT NOTIFICATIONS -->
+  <div id="rightNotifWrap" class="rightNotifWrap" aria-live="polite"></div>
+
 <script>
   let currentPin = "";
   let state = null;
@@ -494,12 +541,39 @@
   function show(id, on){ $(id).style.display = on ? "block" : "none"; }
   function setText(id, t){ $(id).textContent = t || ""; }
 
-  // -------- Online status (browser online/offline + server ping) --------
+  // -------- Right-side notification --------
+  function showRightSuccess(title, text){
+    const wrap = $("rightNotifWrap");
+
+    const el = document.createElement("div");
+    el.className = "notif";
+    el.innerHTML = `
+      <div class="notifBar"></div>
+      <div class="notifBody">
+        <div class="notifIcon">✓</div>
+        <div>
+          <div class="notifTitle">${escapeHtml(title)}</div>
+          <div class="notifText">${escapeHtml(text)}</div>
+        </div>
+      </div>
+    `;
+
+    wrap.appendChild(el);
+
+    // auto remove after 3.2s
+    setTimeout(() => {
+      el.style.transition = "opacity .18s ease, transform .18s ease";
+      el.style.opacity = "0";
+      el.style.transform = "translateX(14px)";
+      setTimeout(() => el.remove(), 220);
+    }, 3200);
+  }
+
+  // -------- Online status --------
   async function updateOnlineStatus(){
     const pill = $("netStatus");
     const text = $("netText");
 
-    // If browser says offline, show offline immediately
     if (!navigator.onLine){
       pill.classList.remove("statusOnline","statusChecking");
       pill.classList.add("statusOffline");
@@ -507,12 +581,10 @@
       return;
     }
 
-    // Checking
     pill.classList.remove("statusOnline","statusOffline");
     pill.classList.add("statusChecking");
     text.textContent = "Checking...";
 
-    // Ping server (fast)
     try{
       const r = await fetch("/api/state", { method:"GET", cache:"no-store" });
       if(!r.ok) throw new Error("bad");
@@ -664,7 +736,7 @@
     $("history").innerHTML = hist || `<div style="color:rgba(255,255,255,.6);font-size:12px;padding:10px;">No history yet.</div>`;
   }
 
-  // ✅ Login with loading + success animation
+  // ✅ Login
   $("loginBtn").onclick = async () => {
     setText("loginErr","");
     currentPin = $("pin").value.trim();
@@ -685,9 +757,8 @@
       setTimeout(async () => {
         show("login", false);
         show("app", true);
-        setText("err",""); setText("ok","");
         render();
-        await updateOnlineStatus(); // show Online/Offline after login
+        await updateOnlineStatus();
       }, 650);
 
     }catch(e){
@@ -707,28 +778,25 @@
   };
 
   $("refreshBtn").onclick = async () => {
-    setText("err",""); setText("ok","");
     try{
       await loadState();
       render();
-      setText("ok","Refreshed.");
-      await updateOnlineStatus();
+      showRightSuccess("Refreshed", "Inventory data updated.");
     }catch(e){
-      setText("err", e.message);
+      showRightSuccess("Refresh failed", String(e.message || e));
+    }finally{
       await updateOnlineStatus();
     }
   };
 
-  // ✅ Apply requires centered confirmation modal
+  // ✅ Apply update with confirm + right-side success notif
   $("applyBtn").onclick = async () => {
-    setText("err",""); setText("ok","");
-
     const color = $("color").value;
     const action = $("action").value;
     const amount = Number(($("amount").value || "").trim());
 
     if(!Number.isFinite(amount) || amount <= 0) {
-      return setText("err","Please enter a valid amount.");
+      return showRightSuccess("Invalid amount", "Please enter a valid amount.");
     }
 
     const item = itemName(color) + " (" + color + ")";
@@ -745,7 +813,10 @@
         body: JSON.stringify({ pin: currentPin, color, action, amount })
       });
       const data = await r.json();
-      if(!r.ok) return setText("err", data.error || "Update failed");
+      if(!r.ok) {
+        showRightSuccess("Update failed", data.error || "Update failed");
+        return;
+      }
 
       state = data;
       state.stock = state.stock || {};
@@ -753,10 +824,12 @@
 
       $("amount").value = "";
       render();
-      setText("ok","Saved.");
-      await updateOnlineStatus();
+
+      // ✅ RIGHT SIDE SUCCESS NOTIFICATION
+      showRightSuccess("✅ Update Successful", `${item}\n${cap(action)} ${amount} has been done.`);
     }catch(e){
-      setText("err", e.message);
+      showRightSuccess("Update failed", String(e.message || e));
+    }finally{
       await updateOnlineStatus();
     }
   };
