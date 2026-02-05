@@ -33,10 +33,7 @@
     padding: 28px 16px;
   }
 
-  .shell{
-    max-width: 980px;
-    margin: 0 auto;
-  }
+  .shell{ max-width: 980px; margin: 0 auto; }
 
   .brand{
     display:flex;
@@ -107,12 +104,6 @@
     box-shadow: 0 0 18px rgba(255,255,255,.35);
   }
 
-  .inputs{
-    display:grid;
-    grid-template-columns: 1fr;
-    gap:10px;
-  }
-
   label{
     display:block;
     font-size: 12px;
@@ -162,11 +153,6 @@
     background: rgba(255,255,255,0.07);
     border: 1px solid var(--border);
     color: var(--text);
-  }
-  .btnDanger{
-    background: rgba(255,77,77,.14);
-    border: 1px solid rgba(255,77,77,.35);
-    color: rgba(255,255,255,.92);
   }
   .btnSmall{
     padding: 10px 12px;
@@ -263,6 +249,32 @@
     color: var(--muted);
   }
 
+  /* ✅ LOW STOCK NEON RED */
+  .lowStock{
+    color: #ff2b2b;
+    font-weight: 900;
+    text-shadow:
+      0 0 6px rgba(255, 43, 43, 0.95),
+      0 0 18px rgba(255, 43, 43, 0.75),
+      0 0 40px rgba(255, 43, 43, 0.55);
+  }
+  .lowPill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 43, 43, 0.35);
+    background: rgba(255, 43, 43, 0.10);
+    font-size: 12px;
+    color: rgba(255,255,255,0.88);
+  }
+  .lowDot{
+    width:8px;height:8px;border-radius:999px;
+    background:#ff2b2b;
+    box-shadow: 0 0 12px rgba(255,43,43,0.9);
+  }
+
   .footerNote{
     margin-top: 14px;
     text-align:center;
@@ -327,7 +339,10 @@
             <div class="cardPad" style="padding:0;">
               <div class="titleRow" style="margin-bottom:8px;">
                 <h2>Current Stock</h2>
-                <span class="pill">CMYK</span>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+                  <span class="pill">CMYK</span>
+                  <span id="lowBanner" style="display:none;" class="lowPill"><span class="lowDot"></span>Low stock detected</span>
+                </div>
               </div>
 
               <table class="table">
@@ -422,18 +437,30 @@
   }
 
   function render(){
-    // stock table
-    const rows = ["C","M","Y","K"].map(c => `
-      <tr>
-        <td>
-          <span class="colorBadge">
-            <span class="swatch ${swatchClass(c)}"></span>
-            ${colorName(c)} (${c})
-          </span>
-        </td>
-        <td>${state.stock?.[c] ?? 0}</td>
-      </tr>
-    `).join("");
+    // ✅ Low stock = below 2
+    const getStock = (c) => Number(state.stock?.[c] ?? 0);
+    const isLow = (n) => n < 2;
+
+    // banner if any low
+    const anyLow = ["C","M","Y","K"].some(c => isLow(getStock(c)));
+    $("lowBanner").style.display = anyLow ? "inline-flex" : "none";
+
+    // stock table (neon red if low)
+    const rows = ["C","M","Y","K"].map(c => {
+      const n = getStock(c);
+      const stockClass = isLow(n) ? "lowStock" : "";
+      return `
+        <tr>
+          <td>
+            <span class="colorBadge">
+              <span class="swatch ${swatchClass(c)}"></span>
+              ${colorName(c)} (${c})
+            </span>
+          </td>
+          <td class="${stockClass}">${n}</td>
+        </tr>
+      `;
+    }).join("");
     $("stockRows").innerHTML = rows;
 
     // history list
@@ -524,4 +551,3 @@
 
 </body>
 </html>
-
