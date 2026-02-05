@@ -88,10 +88,7 @@
     color: rgba(255,255,255,0.82);
     white-space:nowrap;
   }
-  .statusDot{
-    width:10px;height:10px;border-radius:999px;
-    background: rgba(255,255,255,0.35);
-  }
+  .statusDot{ width:10px;height:10px;border-radius:999px; background: rgba(255,255,255,0.35); }
   .statusOnline .statusDot{
     background: var(--ok);
     box-shadow: 0 0 12px rgba(33,195,107,0.9);
@@ -335,39 +332,20 @@
     animation: notifIn .18s ease-out forwards;
     pointer-events:auto;
   }
-  @keyframes notifIn{
-    to{ transform: translateX(0); opacity: 1; }
-  }
-  .notifBar{
-    height: 4px;
-    background: linear-gradient(90deg, rgba(33,195,107,.95), rgba(0,209,255,.65));
-  }
-  .notifBody{
-    padding: 12px 12px;
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-  }
+  @keyframes notifIn{ to{ transform: translateX(0); opacity: 1; } }
+  .notifBar{ height: 4px; background: linear-gradient(90deg, rgba(33,195,107,.95), rgba(0,209,255,.65)); }
+  .notifBody{ padding: 12px 12px; display:flex; gap:10px; align-items:flex-start; }
   .notifIcon{
-    width: 24px;
-    height: 24px;
-    border-radius: 999px;
+    width: 24px;height: 24px;border-radius: 999px;
     background: rgba(33,195,107,0.18);
     border: 1px solid rgba(33,195,107,0.35);
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    display:flex;align-items:center;justify-content:center;
     color: rgba(255,255,255,0.92);
     font-weight: 900;
     flex: 0 0 auto;
     box-shadow: 0 0 16px rgba(33,195,107,0.18);
   }
-  .notifTitle{
-    margin:0;
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing:.2px;
-  }
+  .notifTitle{ margin:0; font-size: 13px; font-weight: 900; letter-spacing:.2px; }
   .notifText{
     margin-top: 4px;
     font-size: 12px;
@@ -375,6 +353,7 @@
     line-height: 1.35;
     white-space: pre-wrap;
   }
+
   .footerNote{
     margin-top: 14px;
     text-align:center;
@@ -537,14 +516,22 @@
   let currentPin = "";
   let state = null;
 
+  // ✅ Session (keep login after refresh) + auto logout after 5 mins
+  const SESSION_KEY = "jco_session_v1";
+  const AUTO_LOGOUT_MS = 5 * 60 * 1000; // 5 minutes
+  let logoutTimer = null;
+
   const $ = (id) => document.getElementById(id);
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
   function show(id, on){ $(id).style.display = on ? "block" : "none"; }
   function setText(id, t){ $(id).textContent = t || ""; }
 
-  // -------- Right-side notification --------
   function showRightSuccess(title, text){
     const wrap = $("rightNotifWrap");
-
     const el = document.createElement("div");
     el.className = "notif";
     el.innerHTML = `
@@ -557,10 +544,8 @@
         </div>
       </div>
     `;
-
     wrap.appendChild(el);
 
-    // auto remove after 3.2s
     setTimeout(() => {
       el.style.transition = "opacity .18s ease, transform .18s ease";
       el.style.opacity = "0";
@@ -597,7 +582,6 @@
       text.textContent = "Offline";
     }
   }
-
   window.addEventListener("online", updateOnlineStatus);
   window.addEventListener("offline", updateOnlineStatus);
 
@@ -692,10 +676,6 @@
     return String(s || "").charAt(0).toUpperCase() + String(s || "").slice(1);
   }
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-
   function render(){
     const ITEMS = ["C","M","Y","K","MB"];
     const getStock = (c) => Number(state.stock?.[c] ?? 0);
@@ -736,6 +716,103 @@
     $("history").innerHTML = hist || `<div style="color:rgba(255,255,255,.6);font-size:12px;padding:10px;">No history yet.</div>`;
   }
 
+  // ✅ Session helpers
+  function saveSession(pin, name){
+    const payload = { pin, name, lastActive: Date.now() };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+  }
+  function clearSession(){
+    localStorage.removeItem(SESSION_KEY);
+  }
+  function readSession(){
+    try{
+      const raw = localStorage.getItem(SESSION_KEY);
+      if(!raw) return null;
+      const s = JSON.parse(raw);
+      if(!s || !s.pin || !s.lastActive) return null;
+      return s;
+    }catch{ return null; }
+  }
+
+  function touchSession(){
+    const s = readSession();
+    if(!s) return;
+    s.lastActive = Date.now();
+    localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+  }
+
+  function stopAutoLogout(){
+    if(logoutTimer) clearTimeout(logoutTimer);
+    logoutTimer = null;
+  }
+
+  async function doLogout({ silent=false } = {}){
+    stopAutoLogout();
+    clearSession();
+    currentPin = "";
+    $("pin").value = "";
+    show("app", false);
+    show("login", true);
+    setText("loginErr","");
+    resetLoginButton();
+    if(!silent) showRightSuccess("Logged out", "You have been signed out.");
+  }
+
+  function startAutoLogout(){
+    stopAutoLogout();
+    logoutTimer = setTimeout(async () => {
+      await doLogout({ silent:false });
+      showRightSuccess("Session expired", "Auto logout after 5 minutes.");
+    }, AUTO_LOGOUT_MS);
+  }
+
+  // reset timer on activity
+  function activity(){
+    const s = readSession();
+    if(!s) return;
+    touchSession();
+    startAutoLogout();
+  }
+  ["click","keydown","mousemove","touchstart","scroll"].forEach(ev => {
+    window.addEventListener(ev, activity, { passive:true });
+  });
+
+  // ✅ Restore login after refresh (if not expired)
+  async function restoreSessionIfValid(){
+    const s = readSession();
+    if(!s) return;
+
+    const age = Date.now() - Number(s.lastActive || 0);
+    if(age > AUTO_LOGOUT_MS){
+      clearSession();
+      return;
+    }
+
+    try{
+      await loadState();
+      const name = state.users?.[s.pin];
+      if(!name){
+        clearSession();
+        return;
+      }
+
+      currentPin = s.pin;
+      $("who").textContent = name;
+
+      show("login", false);
+      show("app", true);
+      render();
+      await updateOnlineStatus();
+
+      // start timer based on remaining time
+      startAutoLogout();
+      showRightSuccess("Welcome back", "Session restored.");
+    }catch{
+      // if server fails, keep user on login
+      clearSession();
+    }
+  }
+
   // ✅ Login
   $("loginBtn").onclick = async () => {
     setText("loginErr","");
@@ -753,12 +830,17 @@
 
       $("who").textContent = name;
 
+      // Save session + start auto logout timer
+      saveSession(currentPin, name);
+      startAutoLogout();
+
       setLoginSuccess();
       setTimeout(async () => {
         show("login", false);
         show("app", true);
         render();
         await updateOnlineStatus();
+        showRightSuccess("✅ Login Successful", "You are now logged in.");
       }, 650);
 
     }catch(e){
@@ -768,13 +850,14 @@
     }
   };
 
-  $("logoutBtn").onclick = () => {
-    currentPin = "";
-    $("pin").value = "";
-    show("app", false);
-    show("login", true);
-    setText("loginErr","");
-    resetLoginButton();
+  // ✅ Logout with confirmation
+  $("logoutBtn").onclick = async () => {
+    const ok = await confirmToast({
+      title: "Confirm Logout",
+      text: "Are you sure you want to logout?"
+    });
+    if(!ok) return;
+    await doLogout();
   };
 
   $("refreshBtn").onclick = async () => {
@@ -782,6 +865,8 @@
       await loadState();
       render();
       showRightSuccess("Refreshed", "Inventory data updated.");
+      touchSession();
+      startAutoLogout();
     }catch(e){
       showRightSuccess("Refresh failed", String(e.message || e));
     }finally{
@@ -825,8 +910,12 @@
       $("amount").value = "";
       render();
 
-      // ✅ RIGHT SIDE SUCCESS NOTIFICATION
       showRightSuccess("✅ Update Successful", `${item}\n${cap(action)} ${amount} has been done.`);
+
+      // user activity => refresh timer
+      touchSession();
+      startAutoLogout();
+
     }catch(e){
       showRightSuccess("Update failed", String(e.message || e));
     }finally{
@@ -837,6 +926,9 @@
   $("pin").addEventListener("keydown", (e) => {
     if(e.key === "Enter") $("loginBtn").click();
   });
+
+  // Init
+  restoreSessionIfValid();
 </script>
 
 </body>
